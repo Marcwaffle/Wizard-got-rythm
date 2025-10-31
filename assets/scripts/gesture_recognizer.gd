@@ -35,6 +35,7 @@ func recognize(points: Array) -> Dictionary:
 	var processed = process_points(points)
 	var best_match = ""
 	var best_score = INF
+	var all_scores = {}  # Debug: track all scores
 	
 	for template_name in templates:
 		var score = distance_at_best_angle(
@@ -45,12 +46,23 @@ func recognize(points: Array) -> Dictionary:
 			2.0
 		)
 		
+		all_scores[template_name] = score  # Debug: store score
+		
 		if score < best_score:
 			best_score = score
 			best_match = template_name
 	
+	# Debug output
+	print("\n=== Recognition Results ===")
+	for template_name in all_scores:
+		var norm_score = 1.0 - (all_scores[template_name] / (0.5 * sqrt(SQUARE_SIZE * SQUARE_SIZE + SQUARE_SIZE * SQUARE_SIZE)))
+		print("%s: %.3f (raw: %.2f)" % [template_name, norm_score, all_scores[template_name]])
+	
 	# Normalize score to 0-1 range (1 = perfect match)
 	var normalized_score = 1.0 - (best_score / (0.5 * sqrt(SQUARE_SIZE * SQUARE_SIZE + SQUARE_SIZE * SQUARE_SIZE)))
+	
+	print("Best match: %s (%.3f)" % [best_match, normalized_score])
+	print("Threshold: %.3f" % RECOGNITION_THRESHOLD)
 	
 	if normalized_score >= RECOGNITION_THRESHOLD:
 		return {"name": best_match, "score": normalized_score}
@@ -208,12 +220,25 @@ func create_line_template(direction: Vector2) -> Array:
 	return points
 
 func create_triangle_template() -> Array:
-	return [
-		Vector2(0, -100),
-		Vector2(87, 50),
-		Vector2(-87, 50),
-		Vector2(0, -100)
-	]
+	var points = []
+	var p1 = Vector2(0, -100)
+	var p2 = Vector2(87, 50)
+	var p3 = Vector2(-87, 50)
+	
+	# Create line from p1 to p2
+	for i in range(43):
+		var t = i / 42.0
+		points.append(p1.lerp(p2, t))
+	# Create line from p2 to p3
+	for i in range(43):
+		var t = i / 42.0
+		points.append(p2.lerp(p3, t))
+	# Create line from p3 back to p1
+	for i in range(43):
+		var t = i / 42.0
+		points.append(p3.lerp(p1, t))
+	
+	return points
 
 func create_square_template() -> Array:
 	return [
