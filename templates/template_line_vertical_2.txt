@@ -1,0 +1,10 @@
+func create_line_vertical_2_template() -> Array:
+	return [
+		Vector2(543.0, 72.0),
+		Vector2(545.0, 102.0),
+		Vector2(547.0, 186.0),
+		Vector2(555.0, 262.0),
+		Vector2(560.0, 328.0),
+		Vector2(563.0, 363.0),
+		Vector2(563.0, 383.0)
+	]

@@ -107,8 +107,20 @@ func recognize(points: Array) -> Dictionary:
 		
 		all_scores[template_name] = score  # Debug: store score
 		
-		if score < best_score:
-			best_score = score
+		# Also check the 180° flipped version (opposite direction)
+		var flipped_score = distance_at_best_angle(
+			processed,
+			templates[template_name],
+			165.0,  # Check around 180°
+			195.0,
+			2.0
+		)
+		
+		# Use whichever direction matches better
+		var best_direction_score = min(score, flipped_score)
+		
+		if best_direction_score < best_score:
+			best_score = best_direction_score
 			best_match = template_name
 	
 	# Debug output

@@ -1,0 +1,13 @@
+func create_line_horizontal_2_template() -> Array:
+	return [
+		Vector2(397.0, 340.0),
+		Vector2(420.0, 340.0),
+		Vector2(471.0, 340.0),
+		Vector2(544.0, 340.0),
+		Vector2(623.0, 338.0),
+		Vector2(680.0, 338.0),
+		Vector2(719.0, 338.0),
+		Vector2(740.0, 338.0),
+		Vector2(748.0, 338.0),
+		Vector2(750.0, 338.0)
+	]

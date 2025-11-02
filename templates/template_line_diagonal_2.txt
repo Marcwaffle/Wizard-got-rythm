@@ -1,0 +1,11 @@
+func create_line_diagonal_2_template() -> Array:
+	return [
+		Vector2(779.0, 207.0),
+		Vector2(779.0, 209.0),
+		Vector2(772.0, 219.0),
+		Vector2(747.0, 246.0),
+		Vector2(702.0, 285.0),
+		Vector2(645.0, 332.0),
+		Vector2(589.0, 382.0),
+		Vector2(556.0, 406.0)
+	]
