@@ -1,0 +1,7 @@
+func create_triangle_template() -> Array:
+	return [
+		Vector2(100.0, 0.0),
+		Vector2(200.0, 173.2),
+		Vector2(0.0, 173.2),
+		Vector2(100.0, 0.0)
+	]

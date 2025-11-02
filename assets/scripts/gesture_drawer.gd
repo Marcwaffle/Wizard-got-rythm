@@ -160,13 +160,16 @@ func save_template():
 		status_label.add_theme_color_override("font_color", Color.RED)
 		return
 	
+	# Normalize the stroke before saving
+	var normalized_stroke = normalize_stroke(current_stroke)
+	
 	# Convert to code format
 	var code = "func create_%s_template() -> Array:\n\treturn [\n" % template_name.to_lower()
 	
-	for i in range(current_stroke.size()):
-		var p = current_stroke[i]
+	for i in range(normalized_stroke.size()):
+		var p = normalized_stroke[i]
 		code += "\t\tVector2(%.1f, %.1f)" % [p.x, p.y]
-		if i < current_stroke.size() - 1:
+		if i < normalized_stroke.size() - 1:
 			code += ",\n"
 		else:
 			code += "\n"
@@ -183,12 +186,12 @@ func save_template():
 	print("========================================\n")
 	
 	# Save to file
-	var file_path = "res://template_%s.txt" % template_name.to_lower()
+	var file_path = "res://templates/template_%s.txt" % template_name.to_lower()
 	var file = FileAccess.open(file_path, FileAccess.WRITE)
 	if file:
 		file.store_string(code)
 		file.close()
-		status_label.text = "Saved to: %s" % file_path
+		status_label.text = "Saved to: templates/template_%s.txt" % template_name.to_lower()
 		status_label.add_theme_color_override("font_color", Color.GREEN)
 	else:
 		status_label.text = "Saved! (Check console for code)"
@@ -199,3 +202,119 @@ func save_template():
 	clear_drawing()
 	name_input.text = ""
 	status_label.text = "Ready for next template"
+
+func normalize_stroke(points: Array) -> Array:
+	if points.size() < 2:
+		return points
+	
+	var normalized = []
+	
+	# Step 1: Snap near-horizontal and near-vertical lines
+	var snapped = snap_to_axes(points)
+	
+	# Step 2: Simplify by removing redundant points
+	var simplified = simplify_points(snapped)
+	
+	# Step 3: Smooth out small jitters
+	var smoothed = smooth_points(simplified)
+	
+	return smoothed
+
+func snap_to_axes(points: Array) -> Array:
+	# Calculate overall direction to determine if this is a line
+	var start = points[0]
+	var end = points[-1]
+	var delta = end - start
+	var length = delta.length()
+	
+	if length < 10:  # Too short to normalize
+		return points
+	
+	var angle = abs(rad_to_deg(delta.angle()))
+	var snapped = []
+	
+	# Check if this is roughly horizontal or vertical
+	var is_horizontal = (angle < 15 or angle > 165) or (angle > 75 and angle < 105)
+	var is_vertical = (angle > 75 and angle < 105) or (angle > 255 and angle < 285)
+	
+	for i in range(points.size()):
+		var p = points[i]
+		var new_p = p
+		
+		# Snap Y coordinate if horizontal line
+		if angle < 15 or angle > 165:
+			var avg_y = 0.0
+			for point in points:
+				avg_y += point.y
+			avg_y /= points.size()
+			new_p.y = avg_y
+		
+		# Snap X coordinate if vertical line
+		elif angle > 80 and angle < 100:
+			var avg_x = 0.0
+			for point in points:
+				avg_x += point.x
+			avg_x /= points.size()
+			new_p.x = avg_x
+		
+		snapped.append(new_p)
+	
+	return snapped
+
+func simplify_points(points: Array, tolerance: float = 5.0) -> Array:
+	# Douglas-Peucker algorithm for line simplification
+	if points.size() < 3:
+		return points
+	
+	var dmax = 0.0
+	var index = 0
+	var end = points.size() - 1
+	
+	for i in range(1, end):
+		var d = perpendicular_distance(points[i], points[0], points[end])
+		if d > dmax:
+			index = i
+			dmax = d
+	
+	if dmax > tolerance:
+		var rec1 = simplify_points(points.slice(0, index + 1), tolerance)
+		var rec2 = simplify_points(points.slice(index, end + 1), tolerance)
+		
+		var result = rec1.slice(0, rec1.size() - 1)
+		result.append_array(rec2)
+		return result
+	else:
+		return [points[0], points[end]]
+
+func perpendicular_distance(point: Vector2, line_start: Vector2, line_end: Vector2) -> float:
+	var dx = line_end.x - line_start.x
+	var dy = line_end.y - line_start.y
+	
+	if dx == 0 and dy == 0:
+		return point.distance_to(line_start)
+	
+	var t = ((point.x - line_start.x) * dx + (point.y - line_start.y) * dy) / (dx * dx + dy * dy)
+	t = clamp(t, 0.0, 1.0)
+	
+	var projection = Vector2(line_start.x + t * dx, line_start.y + t * dy)
+	return point.distance_to(projection)
+
+func smooth_points(points: Array, window: int = 3) -> Array:
+	if points.size() < window:
+		return points
+	
+	var smoothed = []
+	
+	for i in range(points.size()):
+		var sum = Vector2.ZERO
+		var count = 0
+		
+		for j in range(-window, window + 1):
+			var idx = i + j
+			if idx >= 0 and idx < points.size():
+				sum += points[idx]
+				count += 1
+		
+		smoothed.append(sum / count)
+	
+	return smoothed

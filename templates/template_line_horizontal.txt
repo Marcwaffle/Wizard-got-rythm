@@ -1,0 +1,5 @@
+func create_line_horizontal_template() -> Array:
+	return [
+		Vector2(0.0, 100.0),
+		Vector2(200.0, 100.0)
+	]

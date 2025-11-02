@@ -1,0 +1,11 @@
+func create_circle_template() -> Array:
+	return [
+		Vector2(200.0, 100.0),
+		Vector2(170.7, 170.7),
+		Vector2(100.0, 200.0),
+		Vector2(29.3, 170.7),
+		Vector2(0.0, 100.0),
+		Vector2(29.3, 29.3),
+		Vector2(100.0, 0.0),
+		Vector2(170.7, 29.3)
+	]

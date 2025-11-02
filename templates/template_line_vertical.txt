@@ -1,0 +1,5 @@
+func create_line_vertical_template() -> Array:
+	return [
+		Vector2(100.0, 0.0),
+		Vector2(100.0, 200.0)
+	]

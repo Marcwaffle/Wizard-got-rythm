@@ -5,7 +5,7 @@ class_name GestureRecognizer
 # Configuration
 const NUM_POINTS = 64
 const SQUARE_SIZE = 250.0
-const RECOGNITION_THRESHOLD = 0.6  # Lower = more strict (0-1)
+const RECOGNITION_THRESHOLD = 0.3  # Lower = more strict (0-1)
 
 var templates = {}
 
@@ -125,6 +125,15 @@ func recognize(points: Array) -> Dictionary:
 	
 	# Debug output
 	print("\n=== Recognition Results ===")
+	print("Input points: %d" % points.size())
+	print("Processed to: %d points" % processed.size())
+	
+	# Show angle of the drawn gesture
+	if processed.size() >= 2:
+		var delta = processed[-1] - processed[0]
+		var angle = rad_to_deg(delta.angle())
+		print("Gesture angle: %.1f°" % angle)
+	
 	for template_name in all_scores:
 		var norm_score = 1.0 - (all_scores[template_name] / (0.5 * sqrt(SQUARE_SIZE * SQUARE_SIZE + SQUARE_SIZE * SQUARE_SIZE)))
 		print("%s: %.3f (raw: %.2f)" % [template_name, norm_score, all_scores[template_name]])
@@ -149,6 +158,13 @@ func process_points(points: Array) -> Array:
 	return translated
 
 func resample(points: Array, n: int) -> Array:
+	if points.size() < 2:
+		# Not enough points, just duplicate the point
+		var result = []
+		for i in range(n):
+			result.append(points[0] if points.size() > 0 else Vector2.ZERO)
+		return result
+	
 	var interval = path_length(points) / (n - 1)
 	var distance = 0.0
 	var new_points = [points[0]]
@@ -168,8 +184,13 @@ func resample(points: Array, n: int) -> Array:
 			distance += d
 		i += 1
 	
-	if new_points.size() == n - 1:
+	# Make sure we have exactly n points
+	while new_points.size() < n:
 		new_points.append(points[-1])
+	
+	# Trim if we somehow got too many
+	if new_points.size() > n:
+		new_points = new_points.slice(0, n)
 	
 	return new_points
 
@@ -239,10 +260,16 @@ func distance_at_angle(points: Array, template: Array, angle: float) -> float:
 	return path_distance(rotated, template)
 
 func path_distance(points1: Array, points2: Array) -> float:
+	# Make sure both arrays have the same size
+	var min_size = min(points1.size(), points2.size())
+	
+	if min_size == 0:
+		return INF
+	
 	var distance = 0.0
-	for i in range(points1.size()):
+	for i in range(min_size):
 		distance += points1[i].distance_to(points2[i])
-	return distance / points1.size()
+	return distance / min_size
 
 # Helper functions
 func path_length(points: Array) -> float:

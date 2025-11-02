@@ -1,0 +1,8 @@
+func create_square_template() -> Array:
+	return [
+		Vector2(0.0, 0.0),
+		Vector2(150.0, 0.0),
+		Vector2(150.0, 150.0),
+		Vector2(0.0, 150.0),
+		Vector2(0.0, 0.0)
+	]
