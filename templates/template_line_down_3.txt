@@ -1,0 +1,24 @@
+func create_line_down_3_template() -> Array:
+	return [
+		Vector2(513.0, 54.0),
+		Vector2(513.0, 59.0),
+		Vector2(513.0, 84.0),
+		Vector2(513.0, 126.0),
+		Vector2(513.0, 172.0),
+		Vector2(513.0, 211.0),
+		Vector2(513.0, 249.0),
+		Vector2(513.0, 293.0),
+		Vector2(513.0, 334.0),
+		Vector2(513.0, 372.0),
+		Vector2(513.0, 402.0),
+		Vector2(513.0, 422.0),
+		Vector2(513.0, 445.0),
+		Vector2(513.0, 454.0),
+		Vector2(513.0, 459.0),
+		Vector2(513.0, 461.0),
+		Vector2(513.0, 463.0),
+		Vector2(513.0, 464.0),
+		Vector2(513.0, 466.0),
+		Vector2(513.0, 467.0),
+		Vector2(513.0, 468.0)
+	]

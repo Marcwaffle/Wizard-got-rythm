@@ -1,0 +1,21 @@
+func create_line_up_1_template() -> Array:
+	return [
+		Vector2(551.0, 549.0),
+		Vector2(551.0, 543.0),
+		Vector2(548.0, 530.0),
+		Vector2(544.0, 510.0),
+		Vector2(541.0, 484.0),
+		Vector2(534.0, 433.0),
+		Vector2(528.0, 384.0),
+		Vector2(526.0, 332.0),
+		Vector2(525.0, 274.0),
+		Vector2(522.0, 221.0),
+		Vector2(522.0, 186.0),
+		Vector2(522.0, 156.0),
+		Vector2(519.0, 133.0),
+		Vector2(519.0, 122.0),
+		Vector2(519.0, 114.0),
+		Vector2(519.0, 110.0),
+		Vector2(519.0, 108.0),
+		Vector2(518.0, 106.0)
+	]

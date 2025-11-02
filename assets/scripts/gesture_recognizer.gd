@@ -9,21 +9,80 @@ const RECOGNITION_THRESHOLD = 0.6  # Lower = more strict (0-1)
 
 var templates = {}
 
+func load_templates_from_folder(folder_path: String):
+	var dir = DirAccess.open(folder_path)
+	
+	if not dir:
+		print("Could not open templates folder: %s" % folder_path)
+		print("Make sure the folder exists!")
+		return
+	
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".txt"):
+			var full_path = folder_path + file_name
+			load_template_from_file(full_path)
+		
+		file_name = dir.get_next()
+	
+	dir.list_dir_end()
+	
+	print("Loaded %d templates from %s" % [templates.size(), folder_path])
+	for template_name in templates:
+		print("  - %s" % template_name)
+
+func load_template_from_file(file_path: String):
+	var file = FileAccess.open(file_path, FileAccess.READ)
+	
+	if not file:
+		print("Could not open template file: %s" % file_path)
+		return
+	
+	var content = file.get_as_text()
+	file.close()
+	
+	# Extract template name from filename
+	# e.g., "res://templates/template_line_right.txt" -> "line_right"
+	var file_name = file_path.get_file().replace("template_", "").replace(".txt", "")
+	
+	# Parse the points from the file
+	var points = parse_template_points(content)
+	
+	if points.size() > 0:
+		add_template(file_name, points)
+		print("Loaded template: %s (%d points)" % [file_name, points.size()])
+	else:
+		print("Failed to parse template: %s" % file_path)
+
+func parse_template_points(content: String) -> Array:
+	var points = []
+	
+	# Look for Vector2(x, y) patterns
+	var regex = RegEx.new()
+	regex.compile(r"Vector2\s*\(\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*\)")
+	
+	var matches = regex.search_all(content)
+	
+	for match in matches:
+		if match.get_group_count() >= 2:
+			var x = float(match.get_string(1))
+			var y = float(match.get_string(2))
+			points.append(Vector2(x, y))
+	
+	return points
+
 func _ready():
-	# Define your gesture templates here
-	# Each template is an array of Vector2 points
-	# Templates are now directional - orientation matters!
-	add_template("circle_cw", create_circle_template(true))
-	add_template("circle_ccw", create_circle_template(false))
-	add_template("line_right", create_line_template(Vector2.RIGHT))
-	add_template("line_left", create_line_template(Vector2.LEFT))
-	add_template("line_down", create_line_template(Vector2.DOWN))
-	add_template("line_up", create_line_template(Vector2.UP))
-	add_template("triangle", create_triangle_template())
-	add_template("square", create_square_template())
-	add_template("zigzag_right", create_zigzag_template(1))
-	add_template("zigzag_left", create_zigzag_template(-1))
-	# Add more patterns as needed
+	# Load templates from files in res://templates/
+	load_templates_from_folder("res://templates/")
+	
+	# Check if templates loaded
+	if templates.is_empty():
+		print("WARNING: No template files found in res://templates/")
+		print("Use the Template Editor to create some templates first!")
+	else:
+		print("Successfully loaded %d templates" % templates.size())
 
 func add_template(name: String, points: Array):
 	templates[name] = process_points(points)
@@ -241,17 +300,38 @@ func create_triangle_template() -> Array:
 	return points
 
 func create_square_template() -> Array:
-	return [
+	var points = []
+	var corners = [
 		Vector2(-50, -50),
 		Vector2(50, -50),
 		Vector2(50, 50),
 		Vector2(-50, 50),
 		Vector2(-50, -50)
 	]
+	
+	# Create lines between each corner
+	for i in range(corners.size() - 1):
+		var segment_points = 32
+		for j in range(segment_points):
+			var t = j / float(segment_points)
+			points.append(corners[i].lerp(corners[i + 1], t))
+	
+	return points
 
 func create_zigzag_template(direction: int = 1) -> Array:
-	return [
-		Vector2(-100 * direction, -50),
-		Vector2(0, 50),
-		Vector2(100 * direction, -50)
-	]
+	var points = []
+	var p1 = Vector2(-100 * direction, -50)
+	var p2 = Vector2(0, 50)
+	var p3 = Vector2(100 * direction, -50)
+	
+	# First segment: p1 to p2
+	for i in range(64):
+		var t = i / 63.0
+		points.append(p1.lerp(p2, t))
+	
+	# Second segment: p2 to p3
+	for i in range(64):
+		var t = i / 63.0
+		points.append(p2.lerp(p3, t))
+	
+	return points
