@@ -1,5 +1,0 @@
-func create_line_diagonal_down_template() -> Array:
-	return [
-		Vector2(0.0, 0.0),
-		Vector2(200.0, 200.0)
-	]
